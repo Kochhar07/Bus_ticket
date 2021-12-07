@@ -1,3 +1,4 @@
+const { date } = require('joi');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -23,6 +24,7 @@ const ticketSchema = new Schema({
         required: true,
         unique: true
     }
+
 })
 
 module.exports = mongoose.model('Ticket', ticketSchema);

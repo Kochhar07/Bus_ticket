@@ -1,20 +1,19 @@
+// const app = require('./app')
 const express = require('express');
 const app = express();
 const healthCheck = require('./utils/healthCheck');
 const { ticketSchema } = require('./schemas')
 const { bookTicket, closeTicket, openTicket, cancelTicket, viewTicket, adminLogin, resetTicket } = require('./controllers/helper');
 
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // validating ticket
-
 const validateTicket = (req, res, next) => {
     const { error } = ticketSchema.validate(req.body);
     if (error) {
         const msg = error.details.map(el => el.message).join(',')
-        res.status(404).json({
+        return res.status(404).json({
             statusCode: 404,
             status: false,
             message: msg
@@ -48,6 +47,4 @@ app.get('/admin', adminLogin)
 // admin access to reset all tickets
 app.delete('/admin/ticket_reset', resetTicket)
 
-app.listen(3000, () => {
-    console.log("Serving on port 3000")
-})
+module.exports = app;

@@ -1,21 +1,12 @@
 const mongoose = require('mongoose');
 const mongo = require('../db/mongo');
 const Ticket = require('../models/ticket');
-const User = require('../models/user');
-
-
+const { ticketSchema } = require('../schemas');
 
 mongo()
 
 const bookTicket = async (req, res) => {
     const body = req.body
-    // if (body.seat_number > 40 || body.seat_number < 1) {
-    //     res.status(404).json({
-    //         statusCode: 404,
-    //         status: false,
-    //         message: "Seat number not found"
-    //     })
-    // }
     const ticket = await Ticket.find({ seat_number: body.seat_number })
     if (ticket.length > 0) {
         res.status(404).json({
@@ -27,7 +18,7 @@ const bookTicket = async (req, res) => {
     else {
         const new_ticket = new Ticket(req.body)
         new_ticket.save()
-        res.status(200).json({ "Message": "Ticket booked", new_ticket })
+        res.status(200).json({ message: "Ticket booked", new_ticket })
     }
 
 
@@ -43,7 +34,7 @@ const closeTicket = async (req, res) => {
         })
     } else {
 
-        res.status(200).json({ "Message": "Booked Tickets", allTickets })
+        res.status(200).json({ message: "Booked Tickets", allTickets })
     }
 }
 
@@ -67,16 +58,29 @@ const openTicket = async (req, res) => {
                 not_booked.push(i)
             }
         }
-        res.status(200).json({ "Message": "Open Tickets", "Available seats": not_booked })
+        res.status(200).json({ message: "Open Tickets", "Available seats": not_booked })
     }
 
 }
 
 const cancelTicket = async (req, res) => {
     const id = req.body.id
-    await Ticket.findByIdAndDelete({ _id: id })
-    res.status(200).json({ "Message": "Ticket cancelled" })
+    const viewTicket = await Ticket.find({})
+    const userTicket = []
+    for (let ticket of viewTicket) {
+        userTicket.push(ticket.id)
+    }
+    if (userTicket.includes(id)) {
+        await Ticket.findByIdAndDelete({ _id: id })
+        res.status(200).json({ message: "Ticket cancelled" })
+    }
+    else {
+        res.status(400).json({ message: "Invalid Id" })
+    }
 }
+
+
+
 
 const viewTicket = async (req, res) => {
     const id = req.body.id
@@ -111,14 +115,16 @@ const adminLogin = async (req, res) => {
     //     console.log("Welcome Admin");
     // }
     // else{
-    //     res.status(500).json({"Message": "User is not an Admin"});
+    //     res.status(500).json({message: "User is not an Admin"});
     // }
 }
 
 const resetTicket = async (req, res) => {
     const allTickets = await Ticket.find({ is_booked: true }).deleteMany()
     // console.log(allTickets)
-    res.status(200).json({ "Message": "All ticktes are open" })
-
+    res.status(200).json({ message: "All ticktes are open" })
 }
+
+
+
 module.exports = { bookTicket, closeTicket, openTicket, cancelTicket, viewTicket, adminLogin, resetTicket }
